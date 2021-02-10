@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import model.Mutter;
+import model.PostMutterLogin;
 import model.User;
 
 /**
@@ -52,8 +53,30 @@ public class Main extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		request.setCharacterEncoding("UTF-8");
+		String text = request.getParameter("text");
+
+		if (text == null || text.length() == 0) {
+			request.setAttribute("errorMsg", "入力されていません。");
+		}
+
+		if (text != null && text.length() != 0) {
+			ServletContext application = this.getServletContext();
+			List<Mutter> mutterList = (List<Mutter>) application.getAttribute("mutterList");
+
+			HttpSession session = request.getSession();
+			User loginUser = (User) session.getAttribute("loginUser");
+
+			Mutter mutter = new Mutter(loginUser.getName(), text);
+			PostMutterLogin postMutterLogin = new PostMutterLogin();
+			postMutterLogin.execute(mutter, mutterList);
+
+			application.setAttribute("mutterList", mutterList);
+		}
+
+//		response.sendRedirect("/docoTsubu/Main");
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/main.jsp");
+		dispatcher.forward(request, response);
 	}
 
 }
